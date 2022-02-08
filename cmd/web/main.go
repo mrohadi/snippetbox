@@ -8,6 +8,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mrohadi/snippetbox/pkg/models/mysql"
 )
 
 // Define an application struct to hold the application-wide dependencies for the
@@ -16,6 +17,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog *log.Logger
+	snippets *mysql.SnippetModel
 }
 
 func main() {
@@ -42,6 +44,7 @@ func main() {
 	app := &application {
 		infoLog: infoLog,
 		errorLog: errorLog,	
+		snippets: &mysql.SnippetModel{DB: db},
 	}
 
 	svr := &http.Server {
