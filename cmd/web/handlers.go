@@ -11,13 +11,13 @@ import (
 // "Hello from Snippetbox" as the response body.
 // Change the signature of the home handler so it is defined as a method agains
 // *application.
-func(app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the current URL path exactly matches "/". If it doesn't 
 	// the http.NotFound() function to send 404 not found response to client.
 	// Importantly, we then return from the handler. If we don't return the handler
 	// would keep executing and also write the "Hello from Snippetbox" reponse. 
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 	
@@ -37,7 +37,7 @@ func(app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		// Because the home handler function is now a method against applicatio
 		// it can access its fields, including the error logger. We'll write the
 		// message to this instead of the standard logger.
-		app.errorLog.Println(err.Error())
+		app.serverError(w, err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
@@ -47,21 +47,21 @@ func(app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	// dynamic data that we want to pass in, which for now we'll leave as nil.
 	err = ts.Execute(w, nil)
 	if err != nil {
-		app.errorLog.Println(err.Error())
+		app.serverError(w, err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 }
 
 // showSnippetHandler snow snippet as response to the caller.
-func(app *application) showSnippetHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract the value of the id parameter from the query string and try to
 	// convert it to int using strconv.Atoi() function. If it can't be
 	// converted to an integer, or the value is less than 1, we return 404
 	// not found response.
 	id, err := strconv.Atoi(r.URL.Query().Get("id")) 
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return	
 	}
 
@@ -71,7 +71,7 @@ func(app *application) showSnippetHandler(w http.ResponseWriter, r *http.Request
 }
 
 // createSnippetHandler add a new snippet. 
-func(app *application) createSnippetHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) createSnippetHandler(w http.ResponseWriter, r *http.Request) {
 	// Use r.Method to check whether the request use POST method or not
 	// If it's not, use the w.WriteHeader() method to send 405 status code and
 	// the w.Write() method to write "Mehod not Allowed!" response body. we then
@@ -85,7 +85,7 @@ func(app *application) createSnippetHandler(w http.ResponseWriter, r *http.Reque
 		// "Method Not Allowed" string as response body. It's the same as
 		// w.WriteHeader(405)	
 		// w.Write([]byte("Method now allowed!"))
-		http.Error(w, "Method Not Allowed", 405)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
