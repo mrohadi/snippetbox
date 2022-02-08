@@ -7,6 +7,15 @@ import (
 	"os"
 )
 
+// Define an application struct to hold the application-wide dependencies for the
+// web application. For now we'll only include fields for the two custom logger
+// we'll add more to it as the build progresses.
+
+type application struct {
+	errorLog *log.Logger
+	infoLog *log.Logger
+}
+
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of
 	// and some short help text explaining what the flag controls. The value of
@@ -31,15 +40,21 @@ func main() {
 	// the destination and use the log.Lshortfile flag to include the relevant
 	// file name and line number.
 	errorLog := log.New(os.Stderr, "ERROR - ", log.Ldate | log.Ltime | log.Lshortfile)
+	
+	// Initialize a new instance of application containing the dependencies.
+	app := &application {
+		infoLog: infoLog,
+		errorLog: errorLog,	
+	}
 
 	// Use the http.NewServeMux() function to initialize new servemux, then
 	// register the home handler function as the handler for the "/" URL pattern.
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/", app.homeHandler)
 	
 	// Register the two new handler functions and corresponding URL pattern
-	mux.HandleFunc("/snippet", showSnippetHandler)
-	mux.HandleFunc("/snippet/create", createSnippetHandler)
+	mux.HandleFunc("/snippet", app.showSnippetHandler)
+	mux.HandleFunc("/snippet/create", app.createSnippetHandler)
 	
 	// Create a file server which serves files out of the "./ui/static" directory
 	// Note that the path given to the http.Dir function is relative to the pro
