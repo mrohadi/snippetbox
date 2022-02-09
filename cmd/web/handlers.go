@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/mrohadi/snippetbox/pkg/models"
 )
 
 //homeHandler define a home handler function which writes a byte slice containing
@@ -64,10 +66,22 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 		app.notFound(w)
 		return	
 	}
+	
+	// Use the SnippetModel object's Get method to retrieve the data for a
+	// specific record based on its ID. If no matching record is found,
+	// return a 404 Not Found response.
+	s, err := app.snippets.Get(id)
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
 	// Use the fmt.Fprintf() function to interpolate the id value with our response
 	// and write it to the http.ResponseWrite().
-	fmt.Fprintf(w, "Dispaly the snippet with the specific ID %d\n", id)
+	fmt.Fprintf(w, "%v", s)
 }
 
 // createSnippetHandler add a new snippet. 
