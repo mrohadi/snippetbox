@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -25,44 +24,20 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateStruct{Snippets: snippets}
-
-	files := []string{
-		"./ui/html/home.page.go.tpl",
-		"./ui/html/base.layout.go.tpl",
-		"./ui/html/footer.partial.go.tpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
+	// Use the new render helper
+	app.render(w, r, "home.page.go.tpl", &templateData{
+		Snippets: snippets,
+	})
 }
 
 // showSnippetHandler snow snippet as response to the caller.
 func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract the value of the id parameter from the query string and try to
-	// convert it to int using strconv.Atoi() function. If it can't be
-	// converted to an integer, or the value is less than 1, we return 404
-	// not found response.
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
 
-	// Use the SnippetModel object's Get method to retrieve the data for a
-	// specific record based on its ID. If no matching record is found,
-	// return a 404 Not Found response.
 	s, err := app.snippets.Get(id)
 	if err == models.ErrNoRecord {
 		app.notFound(w)
@@ -72,34 +47,10 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Create an instance of templateData struct holding the snippet data.
-	data := &templateStruct{Snippet: s}
-
-	// Initialize a slice containing the paths to the show.page.tmpl file,
-	// plus the base layout and footer partial that we made earlier
-	files := []string{
-		"./ui/html/show.page.go.tpl",
-		"./ui/html/base.layout.go.tpl",
-		"./ui/html/footer.partial.go.tpl",
-	}
-
-	// Parse the template files
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// And then execute them. Notice how we are passing in the snippet
-	// data (a models.Snippet struct) as the final parameter
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
-
-	// Use the fmt.Fprintf() function to interpolate the id value with our response
-	// and write it to the http.ResponseWrite().
-	fmt.Fprintf(w, "%v", s)
+	// Use the new render helper
+	app.render(w, r, "show.page.go.tpl", &templateData{
+		Snippet: s,
+	})
 }
 
 // createSnippetHandler add a new snippet.

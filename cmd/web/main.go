@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -15,9 +16,10 @@ import (
 // web application. For now we'll only include fields for the two custom logger
 // we'll add more to it as the build progresses.
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *mysql.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *mysql.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -40,11 +42,18 @@ func main() {
 	// before the main() function exits.
 	defer db.Close()
 
-	// Initialize a new instance of application containing the dependencies.
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache("./ui/html/")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	// Add it to the application dependencies
 	app := &application{
-		infoLog:  infoLog,
-		errorLog: errorLog,
-		snippets: &mysql.SnippetModel{DB: db},
+		infoLog:       infoLog,
+		errorLog:      errorLog,
+		snippets:      &mysql.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	svr := &http.Server{
