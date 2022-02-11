@@ -19,6 +19,18 @@ type templateData struct {
 	Snippets    []*models.Snippet
 }
 
+// humanDate return formated Time
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+// Initialize a template.FuncMap object and store it in a global variable
+// This is essentially string-keyed map wich acts as a look up between the names
+// of aa custom template function and the function themselve.
+var function = template.FuncMap{
+	"humanDate": humanDate,
+}
+
 // newTemplateCache
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
 	// Initialize a new map to act as the cache.
@@ -38,8 +50,11 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		// and assign it to the name variable
 		name := filepath.Base(page)
 
-		// Parse the page template file into a template set.
-		ts, err := template.ParseFiles(page)
+		// The template.FuncMap must be registered with the template set before
+		// call the ParseFiles() method. This means we have to use template.New
+		// create an empty template set, use the Funcs() method to register the
+		// template.FuncMap, and then parse the file as normal.
+		ts, err := template.New(name).Funcs(function).ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
