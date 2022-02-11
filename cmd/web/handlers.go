@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -31,9 +32,9 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	// Initialize a slice containing the paths to the two files. Note that the
 	// home.page.tmpl file must be the *first* file in the slice.
 	// files := []string{
-	// 	"./ui/html/home.page.tmpl",
-	// 	"./ui/html/base.layout.tmpl",
-	// 	"./ui/html/footer.partial.tmpl",
+	// 	"./ui/html/home.page.go.tpl",
+	// 	"./ui/html/base.layout.go.tpl",
+	// 	"./ui/html/footer.partial.go.tpl",
 	// }
 
 	// ts, err := template.ParseFiles(files...)
@@ -73,6 +74,31 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 	} else if err != nil {
 		app.serverError(w, err)
 		return
+	}
+
+	// Create an instance of templateData struct holding the snippet data.
+	data := &templateStruct{Snippet: s}
+
+	// Initialize a slice containing the paths to the show.page.tmpl file,
+	// plus the base layout and footer partial that we made earlier
+	files := []string{
+		"./ui/html/show.page.go.tpl",
+		"./ui/html/base.layout.go.tpl",
+		"./ui/html/footer.partial.go.tpl",
+	}
+
+	// Parse the template files
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// And then execute them. Notice how we are passing in the snippet
+	// data (a models.Snippet struct) as the final parameter
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
 	}
 
 	// Use the fmt.Fprintf() function to interpolate the id value with our response
