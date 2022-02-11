@@ -7,5 +7,6 @@ import "github.com/mrohadi/snippetbox/pkg/models"
 // At the moment it only contain one field, but we'll add more
 // to it as the build process.
 type templateStruct struct {
-	Snippet *models.Snippet
+	Snippet  *models.Snippet
+	Snippets []*models.Snippet
 }

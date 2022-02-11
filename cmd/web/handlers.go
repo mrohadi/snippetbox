@@ -19,37 +19,33 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := app.snippets.Latest()
+	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	for _, snippet := range s {
-		fmt.Fprintf(w, "%v\n", snippet)
+	data := &templateStruct{Snippets: snippets}
+
+	files := []string{
+		"./ui/html/home.page.go.tpl",
+		"./ui/html/base.layout.go.tpl",
+		"./ui/html/footer.partial.go.tpl",
 	}
 
-	// Initialize a slice containing the paths to the two files. Note that the
-	// home.page.tmpl file must be the *first* file in the slice.
-	// files := []string{
-	// 	"./ui/html/home.page.go.tpl",
-	// 	"./ui/html/base.layout.go.tpl",
-	// 	"./ui/html/footer.partial.go.tpl",
-	// }
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
 
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	http.Error(w, "Internal Server Error", 500)
-	// 	return
-	// }
-
-	// err = ts.Execute(w, nil)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	http.Error(w, "Internal Server Error", 500)
-	// 	return
-	// }
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
 }
 
 // showSnippetHandler snow snippet as response to the caller.
