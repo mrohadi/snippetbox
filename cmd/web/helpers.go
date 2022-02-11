@@ -48,7 +48,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	// Write the template to the buffer, instead of straight to the
 	// http.ResponseWriter. If there is an error, call our serverError helper
 	// and return
-	err := ts.Execute(buff, td)
+	err := ts.Execute(buff, app.addDefaultData(td, r))
 	if err != nil {
 		app.serverError(w, err)
 		return

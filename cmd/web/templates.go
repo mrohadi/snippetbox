@@ -2,7 +2,9 @@ package main
 
 import (
 	"html/template"
+	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/mrohadi/snippetbox/pkg/models"
 )
@@ -12,8 +14,9 @@ import (
 // At the moment it only contain one field, but we'll add more
 // to it as the build process.
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
 }
 
 // newTemplateCache
@@ -61,4 +64,17 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 	}
 
 	return cache, nil
+}
+
+// addDefaultData create an helper that takes a pointer to a templateData struct,
+// adds the current year to the CurrentYear field, and then return the pointer.
+// Again we're not using the *http.Request 	parameter at the moment, but we will do
+// later in the book
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.CurrentYear = time.Now().Year()
+
+	return td
 }
