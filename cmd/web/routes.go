@@ -9,7 +9,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/snippet/create", app.createSnippetHandler)
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", fileServer)
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return secureHeader(mux)
+	return app.logRequest(secureHeader(mux))
 }
