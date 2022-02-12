@@ -11,12 +11,13 @@ func (app *application) routes() http.Handler {
 	// Create a middleware chain containing our 'standard' middleware.
 	// which will be use for every request our application recives
 	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeader)
+	dynamicMiddleware := alice.New(app.sessions.Enable)
 
 	mux := pat.New()
-	mux.Get("/", http.HandlerFunc(app.homeHandler))
-	mux.Get("/snippet/create", http.HandlerFunc(app.createSnippetForm))
-	mux.Post("/snippet/create", http.HandlerFunc(app.createSnippetHandler))
-	mux.Get("/snippet/:id", http.HandlerFunc(app.showSnippetHandler))
+	mux.Get("/", dynamicMiddleware.ThenFunc(app.homeHandler))
+	mux.Get("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetForm))
+	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetHandler))
+	mux.Get("/snippet/:id", dynamicMiddleware.ThenFunc(app.showSnippetHandler))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
