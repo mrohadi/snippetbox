@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
+	form "github.com/mrohadi/snippetbox/pkg/forms"
 	"github.com/mrohadi/snippetbox/pkg/models"
 )
 
@@ -52,8 +51,9 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 
 // createSnipperFrom a GET route to display the create snippet form
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.go.tpl", nil)
-	w.Write([]byte("Create a new snippet"))
+	app.render(w, r, "create.page.go.tpl", &templateData{
+		Form: form.New(nil),
+	})
 }
 
 // createSnippetHandler add a new snippet.
@@ -64,47 +64,21 @@ func (app *application) createSnippetHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
+	// Create a new forms.Form struct containing the POSTed data from the
+	// form, then use the validation methods to check the content.
+	form := form.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValue("expires", "365", "7", "1")
 
-	// Initialize a map to hold any validation errors
-	errors := make(map[string]string)
-
-	// Check that the title field is not blank and is not more than 100 characters
-	// long. If it's fails either of those check, add a messeges to the errors map
-	// using the field name as a key
-	if strings.TrimSpace(title) == "" {
-		errors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errors["title"] = "This field is too long (maximux 100 characters long)"
-	}
-
-	// Check the content field isn't blank
-	if strings.TrimSpace(content) == "" {
-		errors["content"] = "This field cannot be blank"
-	}
-
-	// Check the expires date isn't blank and matches one is permitted
-	// values ("1", "7", "365")
-	if strings.TrimSpace(expires) == "" {
-		errors["expires"] = "This field cannot be blank"
-	} else if expires != "365" && expires != "7" && expires != "1" {
-		errors["expires"] = "This field is invalid"
-	}
-
-	// If there are any validation errors, re-display the create.page.go.tpl
-	// template passing in the validation errors and previously submitted
-	// r.PostForm data.
-	if len(errors) > 0 {
-		app.render(w, r, "create.page.go.tpl", &templateData{
-			FormData:   r.PostForm,
-			FormErrors: errors,
-		})
+	// If the form isn't valid, redisplay the template passing in the
+	// form.Form object as data
+	if !form.Validate() {
+		app.render(w, r, "create.page.go.tpl", &templateData{Form: form})
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)
 		return
