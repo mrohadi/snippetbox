@@ -88,3 +88,28 @@ func (app *application) createSnippetHandler(w http.ResponseWriter, r *http.Requ
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
+
+// signupUserForm display the user sign up form
+func (app *application) singupUserForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display the user sign up form...")
+}
+
+// signupUser insert a new valid user to the database
+func (app *application) singupUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Create a new user...")
+}
+
+// loginUserForm display the login user form
+func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display the user login form...")
+}
+
+// loginUser authenticate the entered user from user login form
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Login a user...")
+}
+
+// logoutUser un-authenticate the user
+func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Logout a user...")
+}

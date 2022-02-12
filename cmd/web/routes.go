@@ -19,6 +19,13 @@ func (app *application) routes() http.Handler {
 	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetHandler))
 	mux.Get("/snippet/:id", dynamicMiddleware.ThenFunc(app.showSnippetHandler))
 
+	// User routes
+	mux.Get("/user/signup", dynamicMiddleware.ThenFunc(app.singupUserForm))
+	mux.Post("/user/signup", dynamicMiddleware.ThenFunc(app.singupUser))
+	mux.Get("/user/login", dynamicMiddleware.ThenFunc(app.loginUserForm))
+	mux.Post("/user/login", dynamicMiddleware.ThenFunc(app.loginUser))
+	mux.Post("/user/logout", dynamicMiddleware.ThenFunc(app.logoutUser))
+
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
