@@ -50,6 +50,7 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 
 // createSnipperFrom a GET route to display the create snippet form
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "create.page.go.tpl", nil)
 	w.Write([]byte("Create a new snippet"))
 }
 
