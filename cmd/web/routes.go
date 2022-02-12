@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/bmizerany/pat"
 	"github.com/justinas/alice"
 )
 
@@ -11,13 +12,14 @@ func (app *application) routes() http.Handler {
 	// which will be use for every request our application recives
 	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeader)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.homeHandler)
-	mux.HandleFunc("/snippet", app.showSnippetHandler)
-	mux.HandleFunc("/snippet/create", app.createSnippetHandler)
+	mux := pat.New()
+	mux.Get("/", http.HandlerFunc(app.homeHandler))
+	mux.Get("/snippet/create", http.HandlerFunc(app.createSnippetForm))
+	mux.Post("/snippet/create", http.HandlerFunc(app.createSnippetHandler))
+	mux.Get("/snippet/:id", http.HandlerFunc(app.showSnippetHandler))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
 	return standardMiddleware.Then(mux)
 }
