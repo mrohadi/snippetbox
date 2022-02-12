@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 // to it as the build process.
 type templateData struct {
 	CurrentYear int
+	FormData    url.Values
+	FormErrors  map[string]string
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 }
