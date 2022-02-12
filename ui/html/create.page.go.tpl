@@ -7,21 +7,21 @@
     {{with .Form}}
     <div>
         <label>Title:</label>
-            {{with .FormErrors.title}}
+            {{with .Errors.Get "title"}}
                 <label class="error">{{.}}</label>
             {{end}}
         <input type='text' name='title' value="{{.Get "title"}}">
     </div>
     <div>
         <label>Content:</label>
-        {{with .FormErrors.content}}
+        {{with .Errors.Get "content"}}
             <label class="error">{{.}}</label>
         {{end}}
         <textarea name='content'>{{.Get "content"}}</textarea>
     </div>
     <div>
         <label>Delete in:</label>
-        {{with .FormErrors.expires}}
+        {{with .Errors.Get "expires"}}
             <label class="error">{{.}}</label>
         {{end}}
         {{$exp := or (.Get "expires") "365"}}

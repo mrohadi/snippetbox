@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLo
@@ -58,4 +59,18 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	// is another time where we pass our http.ResponseWriter to a function that
 	// takes an io.Writer.
 	buff.WriteTo(w)
+}
+
+// addDefaultData create an helper that takes a pointer to a templateData struct,
+// adds the current year to the CurrentYear field, and then return the pointer.
+// Again we're not using the *http.Request 	parameter at the moment, but we will do
+// later in the book
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+	if td == nil {
+		td = &templateData{}
+	}
+	td.CurrentYear = time.Now().Year()
+	td.Flash = app.sessions.PopString(r, "flash")
+
+	return td
 }
