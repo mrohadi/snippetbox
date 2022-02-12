@@ -24,6 +24,7 @@ type application struct {
 	sessions      *sessions.Session
 	snippets      *mysql.SnippetModel
 	templateCache map[string]*template.Template
+	users         *mysql.UserModel
 }
 
 func main() {
@@ -62,6 +63,7 @@ func main() {
 		errorLog:      errorLog,
 		sessions:      session,
 		snippets:      &mysql.SnippetModel{DB: db},
+		users:         &mysql.UserModel{DB: db},
 		templateCache: templateCache,
 	}
 
