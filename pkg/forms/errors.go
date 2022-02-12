@@ -1,4 +1,4 @@
-package form
+package forms
 
 // Define a new type errors, which we will use to hold the validation errors
 // message from form. The name of the form field will be used as the key in

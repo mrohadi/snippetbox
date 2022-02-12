@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	form "github.com/mrohadi/snippetbox/pkg/forms"
+	"github.com/mrohadi/snippetbox/pkg/forms"
 	"github.com/mrohadi/snippetbox/pkg/models"
 )
 
@@ -52,7 +52,7 @@ func (app *application) showSnippetHandler(w http.ResponseWriter, r *http.Reques
 // createSnipperFrom a GET route to display the create snippet form
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.go.tpl", &templateData{
-		Form: form.New(nil),
+		Form: forms.New(nil),
 	})
 }
 
@@ -66,7 +66,7 @@ func (app *application) createSnippetHandler(w http.ResponseWriter, r *http.Requ
 
 	// Create a new forms.Form struct containing the POSTed data from the
 	// form, then use the validation methods to check the content.
-	form := form.New(r.PostForm)
+	form := forms.New(r.PostForm)
 	form.Required("title", "content", "expires")
 	form.MaxLength("title", 100)
 	form.PermittedValue("expires", "365", "7", "1")
@@ -91,7 +91,23 @@ func (app *application) createSnippetHandler(w http.ResponseWriter, r *http.Requ
 
 // signupUserForm display the user sign up form
 func (app *application) singupUserForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display the user sign up form...")
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form := forms.New(r.PostForm)
+	form.Required("name", "email", "password")
+	form.MatchesPattern("email", forms.EmailRX)
+	form.MinLength("password", 10)
+
+	if !form.Validate() {
+		app.render(w, r, "signup.page.go.tpl", &templateData{Form: form})
+		return
+	}
+
+	fmt.Fprintln(w, "Create a new user...")
 }
 
 // signupUser insert a new valid user to the database
